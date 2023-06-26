@@ -1,0 +1,25 @@
+node{
+     def mavenHome = tool name: "maven3.8.2"
+    stage('1.clonecode'){
+        git 'https://github.com/Utipn/maven-web-application-1'
+    }
+    stage('2.test+build'){
+     sh "${mavenHome}/bin/mvn clean package"   
+    }
+    stage('3. sonaqubecode analysis'){
+     sh "${mavenHome}/bin/mvn sonar:sonar"   
+    }
+    stage('4.Uplad2nexus'){
+       sh "${mavenHome}/bin/mvn deploy" 
+    }
+    stage('5.deploy2prod'){
+        deploy adapters: [tomcat9(credentialsId: 'Tomcat-credentials', path: '', url: 'http://3.98.137.75:8177/')], contextPath: null, war: 'target/*war'
+    }
+    stage('6.Notification'){
+        emailext body: '''Hi team,
+
+build status
+
+Nsikak Utip''', subject: 'build status', to: 'utipn@yahoo.com'
+    }
+}
